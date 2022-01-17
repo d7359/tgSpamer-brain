@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Подключение</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="/public/assets/css/bootstrap-4.6.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/public/assets/css/style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+
+<div class="promo_code" id="createAcc" style="">
+    <div class="container">
+        <div class="tarif_info">
+            <div class="row">
+                <div class=" col-md-6 mb-4">
+                    <div class="tarif_bl__one">
+                        <p class="tarif_date">Введите варианты текста первого сообщения через | </p>
+                        <p class="tarif_price"><textarea id="first_message"></textarea></p>
+                        <p class="tarif_date">Введите варианты текста второго сообщения через | </p>
+                        <p class="tarif_price"><textarea id="second_message"></textarea></p>
+                        <p class="tarif_date" style="display: none">Выберите проект</p>
+                        <p class="tarif_price" style="display: none">
+                            <select name="project" id="project">
+                                <option value="default">default</option>
+                            </select>
+                        </p>
+                        <p class="tarif_date" id="errorAcc" style="font-size: 12px; margin:5px; display: none"></p>
+                        <a href="javascript:;" onclick="createMailing()">Создать</a>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>-->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="/public/assets/css/bootstrap-4.6.0/dist/js/bootstrap.min.js"></script>
+
+<script>
+
+
+	function createMailing(){
+		$('#errorAcc').text('').css('display','none')
+
+
+
+		var data = {
+			first_message: $('#first_message').val().trim(),
+			second_message: $('#second_message').val().trim(),
+			project: $('#project').val().trim(),
+		}
+
+		if(data.hash===''){
+			console.log('Пусто')
+			return false;
+		}
+
+		var xhr = new XMLHttpRequest();
+		xhr.open("POST", '/create_mailing', true);
+		xhr.setRequestHeader("Accept", "*/*");
+		xhr.setRequestHeader("Content-Type", "application/json");
+		xhr.withCredentials = true;
+		xhr.addEventListener("readystatechange", function () {
+			if (this.readyState === 4) {
+				var result = JSON.parse(this.responseText);
+				console.log(result)
+				if (result.status != 'ok') {
+					$('#errorAcc').text(result.msg).css({'display':'block','color':'red'})
+					return false
+				}
+
+				$('#errorAcc').text('Рассылка создана').css({'display':'block','color':'green'})
+
+
+
+			}
+		})
+
+		xhr.send(JSON.stringify(data));
+	}
+
+
+
+</script>
+
+
+</body>
+
+</html>
