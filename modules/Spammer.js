@@ -13,7 +13,6 @@ class Spammer{
 	constructor() {
 	}
 
-
 	async createAccount(req, callback){
 		TgAccounts.getAllByCondition({phone:req.body.phone}, result=>{
 
@@ -51,20 +50,6 @@ class Spammer{
 		})
 
 	}
-
-	// async createSendTask(req, res){
-	//
-	// 	let result = await sendTasksController.createMany(req.body.tasks)
-	//
-	// 	if(result.error){
-	// 		console.error(result)
-	// 		return res.json({status:'error', msg:'Ошибка при создании'})
-	// 	}
-	//
-	// 	return res.json({status:'ok'})
-	//
-	// }
-
 
 	async confirmCode(req, callback){
 
@@ -140,14 +125,7 @@ class Spammer{
 			})
 		})
 
-
-
-
-
-
-
 	}
-
 
 	saveContacts(req, callback){
 		TgParsings.getAllByCondition({_id:req.body.parsingId, end:'no'}, result=>{
@@ -296,8 +274,6 @@ class Spammer{
 
 	}
 
-
-
 	executeMailing(id, callback){
 		return TgMailings.getAllByCondition({_id:id}, result=>{
 
@@ -329,13 +305,6 @@ class Spammer{
 
 				const contacts = result.data
 
-				// TgAccounts.getAllByCondition({status:'active'}, result=>{
-				// 	const accounts = result.data
-				//
-				//
-				// 	const countInParts = contacts.length/accounts.length
-				// 	const countInLastPart = (contacts.length - countInParts*accounts.length)+countInParts
-
 					const tasks = []
 
 					for(const contact of contacts){
@@ -357,15 +326,6 @@ class Spammer{
 				TgTasks.createMany(tasks, result=>{
 					console.log(result)
 				})
-
-
-				// })
-
-
-
-
-
-
 
 			})
 		})
@@ -427,21 +387,10 @@ class Spammer{
 						try{
 							const response = JSON.parse(body);
 
-							let status
-							// if(response.status==='ok'){
-							//
-							// }
-							// else{
-							//
-							// }
 
 							TgTasks.update({_id:task._id}, {status:response.status}, result=>{
 								console.log(result)
 							})
-
-							// TgMessages.create({tg_account: tgAccount.phone, contact: task.data.user}, result=>{
-							// 	console.log(result)
-							// })
 
 							return setTimeout(()=>{this.tasksExecutor()}, 10000)
 
@@ -477,10 +426,6 @@ class Spammer{
 					console.error(phonesData)
 					return setTimeout(()=>{this.tasksExecutor()}, 10000)
 				}
-
-				// if(phonesData.length===0){
-				// 	return setTimeout(()=>{this.tasksExecutor()}, 10000)
-				// }
 
 				let tgAccount = false
 
@@ -539,13 +484,6 @@ class Spammer{
 					try{
 						const response = JSON.parse(body);
 
-						let status
-						// if(response.status==='ok'){
-						//
-						// }
-						// else{
-						//
-						// }
 
 						TgTasks.update({_id:task._id}, {status:response.status}, result=>{
 							console.log(result)
@@ -571,210 +509,6 @@ class Spammer{
 	getRandomInRange(min, max) {
 		return Math.floor(Math.random() * (max - min + 1)) + min;
 	}
-
-	// async checkSendTasks(){
-	//
-	// 	const tasks = await sendTasksController.getAllByCondition({status: null, execute_time: {$lte: moment().format('YYYY-MM-DD HH:mm:ss')}})
-	//
-	// 	if(tasks.error){
-	// 		return setTimeout(()=>{this.checkSendTasks()}, 3000)
-	// 	}
-	//
-	// 	if(tasks.length===0){
-	// 		return setTimeout(()=>{this.checkSendTasks()}, 3000)
-	// 	}
-	//
-	// 	await this.executeSendTasks(tasks)
-	//
-	// 	this.checkSendTasks()
-	//
-	// }
-	//
-	// async checkCallbackTasks(){
-	//
-	// 	const tasks = await callbackTasksController.getAllByCondition({status: null, execute_time: {$lte: moment().format('YYYY-MM-DD HH:mm:ss')}})
-	//
-	// 	if(tasks.error){
-	// 		return setTimeout(()=>{this.checkCallbackTasks()}, 3000)
-	// 	}
-	//
-	// 	if(tasks.length===0){
-	// 		return setTimeout(()=>{this.checkCallbackTasks()}, 3000)
-	// 	}
-	//
-	// 	await this.executeSendTasks(tasks)
-	//
-	// 	this.checkCallbackTasks()
-	//
-	// }
-	//
-	// executeSendTasks(tasks){
-	// 	return new Promise(resolve=>{
-	//
-	// 		const success_ids = []
-	// 		const failure_ids = []
-	// 		const callbackTasks = []
-	//
-	// 		return async.eachSeries(tasks, (task, taskCallback)=>{
-	// 				(async ()=>{
-	// 					let d = await this.sendMessage(task.data)
-	//
-	// 					const callbackTask = {
-	// 						data:task.data,
-	// 						execute_time: moment().format('YYYY-MM-DD HH:mm:ss')
-	// 					}
-	// 					callbackTask.data.type = 'status'
-	//
-	// 					if(d.status==='ok'){
-	// 						callbackTask.sent = true
-	// 						success_ids.push(task._id.toString())
-	// 					}
-	// 					else{
-	// 						callbackTask.sent = false
-	// 						failure_ids.push(task._id.toString())
-	// 					}
-	//
-	// 					callbackTasks.push(callbackTask)
-	//
-	// 					return setTimeout(()=>{taskCallback()})
-	// 				})();
-	// 			},
-	// 			err=>{
-	// 				if(err){
-	// 					console.error(err)
-	// 				}
-	//
-	// 				sendTasksController.updateMany({_id:{$in:success_ids}}, {status:'ok'}, result=>{
-	// 					console.log(result)
-	// 				})
-	// 				sendTasksController.updateMany({_id:{$in:failure_ids}}, {status:'error'}, result=>{
-	// 					console.log(result)
-	// 				})
-	//
-	// 				callbackTasksController.createMany(callbackTasks, result=>{
-	// 					console.log(result)
-	// 				})
-	//
-	//
-	// 				return resolve()
-	// 			}
-	// 		)
-	//
-	// 	})
-	// }
-	//
-	// executeCallbackTasks(tasks){
-	// 	return new Promise(resolve=>{
-	//
-	// 		const success_ids = []
-	// 		const failure_ids = []
-	// 		// const callbackTasks = []
-	//
-	// 		return async.eachSeries(tasks, (task, taskCallback)=>{
-	// 				(async ()=>{
-	// 					let d = await this.sendRequest(task.data)
-	//
-	// 					// const callbackTask = {
-	// 					// 	data:task.data,
-	// 					// 	execute_time: moment().format('YYYY-MM-DD HH:mm:ss')
-	// 					// }
-	//
-	// 					if(d.status==='ok'){
-	// 						// callbackTask.sent = true
-	// 						success_ids.push(task._id.toString())
-	// 					}
-	// 					else{
-	// 						// callbackTask.sent = false
-	// 						failure_ids.push(task._id.toString())
-	// 					}
-	//
-	// 					// callbackTasks.push(callbackTask)
-	//
-	// 					return setTimeout(()=>{taskCallback()})
-	// 				})();
-	// 			},
-	// 			err=>{
-	// 				if(err){
-	// 					console.error(err)
-	// 				}
-	//
-	// 				callbackTasksController.updateMany({_id:{$in:success_ids}}, {status:'ok'}, result=>{
-	// 					console.log(result)
-	// 				})
-	// 				callbackTasksController.updateMany({_id:{$in:failure_ids}}, {status:'error'}, result=>{
-	// 					console.log(result)
-	// 				})
-	//
-	// 				// callbackTasksController.createMany(callbackTasks, result=>{
-	// 				// 	console.log(result)
-	// 				// })
-	//
-	//
-	// 				return resolve()
-	// 			}
-	// 		)
-	//
-	// 	})
-	// }
-	//
-	// async sendMessage(data){
-	//
-	// 	return new Promise(async resolve=>{
-	// 		const addContact = await this.accounts[data.phone].call('contacts.addContact', {
-	// 			id	:{
-	// 				_: 'inputUser',
-	// 				user_id: data.user.id,
-	// 				access_hash: data.user.access_hash
-	// 			},
-	// 			first_name:	data.user.first_name || '',
-	// 			last_name:	data.user.last_name || '',
-	// 			phone:	data.user.phone ||''
-	// 		})
-	//
-	//
-	// 		const sendMessage = await this.accounts[data.phone].call('messages.sendMessage', {
-	// 			peer	:{
-	// 				_: 'inputPeerUser',
-	// 				user_id: data.user.id,
-	// 				access_hash: data.user.access_hash
-	// 			},
-	// 			message:	data.message,
-	// 			random_id:	Math.ceil(Math.random() * 0xffffff) + Math.ceil(Math.random() * 0xffffff),
-	// 			// phone:	user.phone ||''
-	// 		})
-	//
-	// 		if(sendMessage._!=='updateShortSentMessage'){
-	//
-	// 			console.error(sendMessage)
-	//
-	// 			return resolve({status:'error'})
-	// 		}
-	//
-	// 		return resolve({status:'ok'})
-	//
-	// 	})
-	// }
-	//
-	// sendRequest(data){
-	// 	return new Promise(resolve => {
-	// 		return request({
-	// 			url:'https://go.geeko.tech/tg_callback',
-	// 			method:'POST',
-	// 			headers:{'Content-Type':'application/json'},
-	// 			body:JSON.stringify(data)
-	// 		}, (error,  httpResponse, body)=>{
-	// 			console.error(error)
-	// 			// console.log(httpResponse)
-	// 			console.log(body)
-	//
-	// 			if(error){
-	// 				return resolve({status:'error'})
-	// 			}
-	//
-	// 			return resolve({status:'ok'})
-	// 		})
-	// 	})
-	// }
 
 }
 

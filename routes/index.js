@@ -22,7 +22,6 @@ router.post('/create_account', (req, res, next) => {
 		return res.json(result)
 	})
 
-
 })
 
 router.post('/confirm_account', (req, res, next) => {
@@ -74,19 +73,15 @@ router.post('/mailing_callbacks', (req, res, next) => {
 
 router.get('/tg_spammer_connect', function(req,res, next){
 
-		const objectData ={
-
-		}
+		const objectData ={}
 
 		return res.render('tg_spamer_connect', objectData);
-
 
 })
 router.get('/tg_spammer_parser', function(req,res, next){
 
 
-		const objectData ={
-		}
+		const objectData ={}
 
 		return res.render('tg_spamer_parser', objectData);
 
@@ -95,12 +90,9 @@ router.get('/tg_spammer_parser', function(req,res, next){
 router.get('/tg_spammer_mailing', function(req,res, next){
 
 
-		const objectData ={
-
-		}
+		const objectData ={}
 
 		return res.render('tg_spamer_mailing', objectData);
-
 
 })
 
