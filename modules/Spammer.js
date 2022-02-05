@@ -94,18 +94,20 @@ class Spammer{
 
 		})
 
-
-
 	}
 
 	async parseContacts(req, callback){
 
-		TgParsings.create({}, result=>{
-			const parsing = result.data;
+		return TgAccounts.getAllByCondition({status:'active'}, result=>{
 
-			return TgAccounts.getAllByCondition({status:'active'}, result=>{
+			const ips = Array.from(new Set(result.data.map(el=>el.ip)))
 
-				const ips = Array.from(new Set(result.data.map(el=>el.ip)))
+			if(ips.length===0){
+				return callback({status:'error',msg   : 'Нет подключенных номеров'})
+			}
+
+			TgParsings.create({}, result=>{
+				const parsing = result.data;
 
 				for(const ip of ips){
 					request({
