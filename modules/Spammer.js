@@ -6,6 +6,7 @@ const TgMailings = require('../controllers/tgMailingsController')
 const TgTasks = require('../controllers/tgTasksController')
 const TgMessages = require('../controllers/tgMessagesController')
 const TgParsings = require('../controllers/tgParsingsController')
+const TgConfigs = require('../controllers/tgConfigsController')
 
 
 class Spammer{
@@ -14,41 +15,81 @@ class Spammer{
 	}
 
 	async createAccount(req, callback){
-		TgAccounts.getAllByCondition({phone:req.body.phone}, result=>{
+
+		TgConfigs.getAllByConditionWithOptions({}, {sort:{_id:-1}}, result=>{
 
 			if(result.status!=='ok'){
-				return callback({status:'error'})
+				return callback({status:'error', msg:'Ошибка'})
 			}
 
-			if(result.data.length>0){
-				return callback({status:'error', msg:'Уже есть такой аккаунт'})
+			if(result.data.length===0){
+				return callback({status:'error', msg:'Ошибка'})
 			}
 
-			TgAccounts.create({phone: req.body.phone, api_id: req.body.api_id, api_hash:req.body.api_hash, ip:req.body.ip, status:'draft'}, result=>{
+			this.checkActivation(result.data[0], result=>{
 				if(result.status!=='ok'){
-					return callback({status:'error'})
+					return callback(result)
 				}
 
-				return request({
-					url:'http://'+req.body.ip+':8080/create_account',
-					method:"POST",
-					headers:{
-						'Content-Type':'application/json'
-					},
-					body:JSON.stringify(req.body)
-				}, (err, httpCode, body)=>{
+				TgAccounts.getAllByCondition({phone:req.body.phone}, result=>{
 
-					console.log(err);
+					if(result.status!=='ok'){
+						return callback({status:'error'})
+					}
 
-					console.log(body)
+					if(result.data.length>0){
+						return callback({status:'error', msg:'Уже есть такой аккаунт'})
+					}
 
-					return callback(body)
+					TgAccounts.create({phone: req.body.phone, api_id: req.body.api_id, api_hash:req.body.api_hash, ip:req.body.ip, status:'draft'}, result=>{
+						if(result.status!=='ok'){
+							return callback({status:'error'})
+						}
+
+						return request({
+							url:'http://'+req.body.ip+':8080/create_account',
+							method:"POST",
+							headers:{
+								'Content-Type':'application/json'
+							},
+							body:JSON.stringify(req.body)
+						}, (err, httpCode, body)=>{
+
+							console.log(err);
+
+							console.log(body)
+
+							return callback(body)
+
+						})
+					})
 
 				})
 			})
 
-		})
 
+
+		})
+	}
+
+	checkActivation(data, callback){
+		request({
+			url: 'https://go.geeko.tech/check_spamer_activation',
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(data)
+		}, (error,  httpResponse, body)=> {
+			console.log(error)
+			console.log(body)
+
+			if(body==='{"status":"ok"}'){
+				return callback({status:'ok'})
+			}
+
+			callback({status:'error', msg: 'Ошибка при активации'})
+		})
 	}
 
 	async confirmCode(req, callback){
@@ -94,6 +135,34 @@ class Spammer{
 
 		})
 
+	}
+
+	async activation(req, callback){
+
+		TgConfigs.create({'data.key':req.body.hash}, result=>{
+
+			if(result.sttaus!=='ok'){
+				return callback({status:'error', msg: 'Ошибка при активации'})
+			}
+
+			request({
+				url: 'https://go.geeko.tech/spamer_activation',
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(result.data)
+			}, (error,  httpResponse, body)=> {
+				console.log(error)
+				console.log(body)
+
+				if(body==='{"status":"ok"}'){
+					return callback({status:'ok'})
+				}
+
+				callback({status:'error', msg: 'Ошибка при активации'})
+			})
+		})
 	}
 
 	async parseContacts(req, callback){

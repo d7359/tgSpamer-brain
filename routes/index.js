@@ -24,6 +24,16 @@ router.post('/create_account', (req, res, next) => {
 
 })
 
+router.post('/activation', (req, res, next) => {
+
+	console.log(req.body)
+
+	return Spammer.activation(req, result=>{
+		return res.json(result)
+	})
+
+})
+
 router.post('/confirm_account', (req, res, next) => {
 
 	console.log(req.body)
@@ -93,6 +103,14 @@ router.get('/tg_spammer_mailing', function(req,res, next){
 		const objectData ={}
 
 		return res.render('tg_spamer_mailing', objectData);
+
+})
+router.get('/tg_spammer_activation', function(req,res, next){
+
+
+		const objectData ={}
+
+		return res.render('tg_spamer_activation', objectData);
 
 })
 
