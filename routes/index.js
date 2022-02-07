@@ -83,9 +83,19 @@ router.post('/mailing_callbacks', (req, res, next) => {
 
 router.get('/tg_spammer_connect', function(req,res, next){
 
-		const objectData ={}
 
-		return res.render('tg_spamer_connect', objectData);
+		return Spammer.checkActivation(result=>{
+
+			if(result.status!=='ok'){
+				return res.redirect('/tg_spammer_activation')
+			}
+
+			const objectData ={}
+
+			return res.render('tg_spamer_connect', objectData);
+		})
+
+
 
 })
 router.get('/tg_spammer_parser', function(req,res, next){

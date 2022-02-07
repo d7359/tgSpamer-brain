@@ -16,17 +16,9 @@ class Spammer{
 
 	async createAccount(req, callback){
 
-		TgConfigs.getAllByConditionWithOptions({}, {sort:{_id:-1}}, result=>{
 
-			if(result.status!=='ok'){
-				return callback({status:'error', msg:'Ошибка'})
-			}
 
-			if(result.data.length===0){
-				return callback({status:'error', msg:'Ошибка'})
-			}
-
-			this.checkActivation(result.data[0], result=>{
+			this.checkActivation( result=>{
 				if(result.status!=='ok'){
 					return callback(result)
 				}
@@ -67,28 +59,37 @@ class Spammer{
 				})
 			})
 
-
-
-		})
 	}
 
-	checkActivation(data, callback){
-		request({
-			url: 'https://go.geeko.tech/check_spamer_activation',
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(data)
-		}, (error,  httpResponse, body)=> {
-			console.log(error)
-			console.log(body)
+	checkActivation( callback){
 
-			if(body==='{"status":"ok"}'){
-				return callback({status:'ok'})
+		TgConfigs.getAllByConditionWithOptions({}, {sort:{_id:-1}}, result=>{
+
+			if(result.status!=='ok'){
+				return callback({status:'error', msg:'Ошибка'})
 			}
 
-			callback({status:'error', msg: 'Ошибка при активации'})
+			if(result.data.length===0){
+				return callback({status:'error', msg:'Ошибка'})
+			}
+
+			request({
+				url: 'https://go.geeko.tech/check_spamer_activation',
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(result.data[0])
+			}, (error,  httpResponse, body)=> {
+				console.log(error)
+				console.log(body)
+
+				if(body==='{"status":"ok"}'){
+					return callback({status:'ok'})
+				}
+
+				callback({status:'error', msg: 'Ошибка при активации'})
+			})
 		})
 	}
 
