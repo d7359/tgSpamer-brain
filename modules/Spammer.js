@@ -140,7 +140,11 @@ class Spammer{
 
 	async activation(req, callback){
 
-		TgConfigs.create({'data.key':req.body.hash}, result=>{
+		const data = {
+			key: req.body.hash
+		}
+
+		TgConfigs.create({data}, result=>{
 
 			if(result.sttaus!=='ok'){
 				return callback({status:'error', msg: 'Ошибка при активации'})
