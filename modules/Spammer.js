@@ -147,7 +147,7 @@ class Spammer{
 		TgConfigs.create({data}, result=>{
 			console.log(result)
 
-			if(result.sttaus!=='ok'){
+			if(result.status!=='ok'){
 				return callback({status:'error', msg: 'Ошибка при активации'})
 			}
 
