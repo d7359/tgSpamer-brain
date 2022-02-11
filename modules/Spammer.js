@@ -408,19 +408,19 @@ class Spammer{
 		})
 	}
 
-	tasksExecutor(){
+	tasksExecutor(answer){
 
 		console.log('tasksExecutor')
 
 		const limit = 40
 
-		TgTasks.getAllByCondition({status:null}, result=>{
+		TgTasks.getAllByCondition({status:null, answer:answer}, result=>{
 			if(result.status!=='ok'){
-				return setTimeout(()=>{this.tasksExecutor()}, 10000)
+				return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
 			}
 
 			if(result.data.length===0){
-				return setTimeout(()=>{this.tasksExecutor()}, 10000)
+				return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
 			}
 
 			const task = result.data[0]
@@ -469,12 +469,12 @@ class Spammer{
 								console.log(result)
 							})
 
-							return setTimeout(()=>{this.tasksExecutor()}, 10000)
+							return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
 
 						}
 						catch (e){
 							console.error(e)
-							return setTimeout(()=>{this.tasksExecutor()}, 10000)
+							return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
 						}
 					})
 				})
@@ -482,11 +482,11 @@ class Spammer{
 
 			return TgAccounts.getAllByCondition({status:'active'}, async result=>{
 				if(result.status!=='ok'){
-					return setTimeout(()=>{this.tasksExecutor()}, 10000)
+					return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
 				}
 
 				if(result.data.length===0){
-					return setTimeout(()=>{this.tasksExecutor()}, 10000)
+					return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
 				}
 
 				const accounts = result.data;
@@ -501,7 +501,7 @@ class Spammer{
 
 				if(phonesData.error){
 					console.error(phonesData)
-					return setTimeout(()=>{this.tasksExecutor()}, 10000)
+					return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
 				}
 
 				let tgAccount = false
@@ -523,7 +523,7 @@ class Spammer{
 				}
 
 				if(!tgAccount){
-					return setTimeout(()=>{this.tasksExecutor()}, 10000)
+					return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
 				}
 
 				const body = {
@@ -570,12 +570,12 @@ class Spammer{
 							console.log(result)
 						})
 
-						return setTimeout(()=>{this.tasksExecutor()}, 10000)
+						return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
 
 					}
 					catch (e){
 						console.error(e)
-						return setTimeout(()=>{this.tasksExecutor()}, 10000)
+						return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
 					}
 				})
 			})

@@ -55,7 +55,8 @@ class MainClass{
 
 	constructor(){
 
-		Spammer.tasksExecutor()
+		Spammer.tasksExecutor(true)
+		Spammer.tasksExecutor(false)
 
 	}
 }
