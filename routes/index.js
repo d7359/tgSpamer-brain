@@ -51,6 +51,14 @@ router.post('/parse_contacts', (req, res, next) => {
 		return res.json(result)
 	})
 })
+router.post('/check_parse_contacts', (req, res, next) => {
+
+	console.log(req.body)
+
+	return Spammer.checkParseContacts(req, result=>{
+		return res.json(result)
+	})
+})
 
 router.post('/save_contacts', (req, res, next) => {
 

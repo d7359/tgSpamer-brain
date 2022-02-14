@@ -82,7 +82,9 @@
 					return false
 				}
 
-				$('#errorAcc').text('Парсинг завершен').css({'display':'block','color':'green'})
+				checkParsingContacts(result.parsingId)
+
+
 
 
 			}
@@ -90,6 +92,56 @@
 
 		xhr.send(JSON.stringify(data));
 	}
+
+	function checkParsingContacts(parsingId){
+		$('#errorAcc').text('Процесс парсинга запущен, ожидайте окончания').css({'display':'block','color':'green'})
+
+		// if(!$('#confirm').is(':checked')){
+		// 	$('#error').text('Пожалуйста, примите нашу оферту.').css({'display':'','color':'red'})
+		// 	return;
+		// }
+
+		var data = {
+			parsingId: parsingId,
+		}
+
+
+		var xhr = new XMLHttpRequest();
+		xhr.open("POST", '/check_parse_contacts', true);
+		xhr.setRequestHeader("Accept", "*/*");
+		xhr.setRequestHeader("Content-Type", "application/json");
+		xhr.withCredentials = true;
+		xhr.addEventListener("readystatechange", function () {
+			if (this.readyState === 4) {
+				var result = JSON.parse(this.responseText);
+				console.log(result)
+				if (result.status != 'ok') {
+					// $('#errorAcc').text(result.msg).css({'display':'block','color':'red'})
+					// return false
+
+                    return setTimeout(()=>{
+                    	checkParsingContacts(parsingId)
+                    },1500)
+				}
+
+			    if(result.finish){
+				    $('#errorAcc').text('Парсинг завершен').css({'display':'block','color':'green'})
+                    return;
+                }
+
+
+				return setTimeout(()=>{
+					checkParsingContacts(parsingId)
+				},1000)
+
+
+
+
+			}
+		})
+
+		xhr.send(JSON.stringify(data));
+    }
 
 
 </script>

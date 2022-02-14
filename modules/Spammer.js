@@ -198,8 +198,23 @@ class Spammer{
 					})
 				}
 
-				return callback({status: 'ok'})
+				return callback({status: 'ok', parsingId: parsing._id.toString()})
 			})
+		})
+
+	}
+	async checkParseContacts(req, callback){
+
+
+		TgParsings.getAllByCondition({_id:req.body.parsingId}, result=>{
+
+			if(result.status!=='ok'){
+				return callback({status: 'error'})
+			}
+
+			const parsing = result.data[0];
+
+			return callback({status: 'ok', finish: parsing.end==='yes'})
 		})
 
 	}
