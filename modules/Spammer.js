@@ -74,7 +74,7 @@ class Spammer{
 			}
 
 			request({
-				url: 'https://go.geeko.tech/check_spamer_activation',
+				url: 'https://pay.telegramer.bot/check_spamer_activation',
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -152,7 +152,7 @@ class Spammer{
 			}
 
 			request({
-				url: 'https://go.geeko.tech/spamer_activation',
+				url: 'https://pay.telegramer.bot/spamer_activation',
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'

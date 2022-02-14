@@ -559,7 +559,7 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  background: url(https://discord.geeko.tech/public/assets/images/IMG_4023.png) no-repeat 0px 0;
+  background: url(https://pay.telegramer.bot/public/assets/images/IMG_4023.png) no-repeat 0px 0;
   background-size: contain;
   height: 80%;
   width: 50%;
@@ -569,7 +569,7 @@ body {
   position: absolute;
   bottom: 0;
   right: 0;
-  background: url(https://discord.geeko.tech/public/assets/images/IMG_3610.PNG) no-repeat 100% 31px;
+  background: url(https://pay.telegramer.bot/public/assets/images/IMG_3610.PNG) no-repeat 100% 31px;
   background-size: contain;
   height: 50%;
   width: 30%;
@@ -735,7 +735,7 @@ footer p {
     margin-top: 24px;
   }
   .right_fon {
-    background: url(https://discord.geeko.tech/public/assets/images/IMG_3610.PNG) no-repeat 0% 100%;
+    background: url(https://pay.telegramer.bot/public/assets/images/IMG_3610.PNG) no-repeat 0% 100%;
     background-size: contain;
   }
   .section_one {
