@@ -326,6 +326,11 @@ class Spammer{
 
 			console.log(contact.mailings[lastMailingIndex])
 
+
+			if(contact.mailings[data.phone][lastMailingIndex].second_message){
+				return callback({status:'ok'})
+			}
+
 			return TgMailings.getAllByCondition({_id:contact.mailings[data.phone][lastMailingIndex].mailingId}, result=>{
 
 				const mailing = result.data[0];
