@@ -320,7 +320,16 @@ class Spammer{
 
 	sendSecondMessage(data, callback){
 		return TgContacts.getAllByCondition({id:data.user.id}, result=>{
+
+			if(result.data.length===0){
+				return callback({status:'ok'})
+			}
+
 			const contact = result.data[0];
+
+			if(!contact.mailings || !contact.mailings[data.phone]){
+				return callback({status:'ok'})
+			}
 
 			const lastMailingIndex = contact.mailings[data.phone].length-1
 
