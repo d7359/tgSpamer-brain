@@ -173,32 +173,40 @@ class Spammer{
 
 	async parseContacts(req, callback){
 
-		return TgAccounts.getAllByCondition({status:'active'}, result=>{
 
-			const ips = Array.from(new Set(result.data.map(el=>el.ip)))
+		return this.checkActivation(result=>{
 
-			if(ips.length===0){
-				return callback({status:'error',msg   : 'Нет подключенных номеров'})
+			if(result.status!=='ok'){
+				return callback({status:'error',msg   : 'Не активировано'})
 			}
 
-			TgParsings.create({}, result=>{
-				const parsing = result.data;
+			return TgAccounts.getAllByCondition({status:'active'}, result=>{
 
-				for(const ip of ips){
-					request({
-						url: 'http://'+ip+':8080/parse_contacts',
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({...req.body, parsingId:parsing._id.toString()})
-					}, (error,  httpResponse, body)=> {
-						console.log(error)
-						console.log(body)
-					})
+				const ips = Array.from(new Set(result.data.map(el=>el.ip)))
+
+				if(ips.length===0){
+					return callback({status:'error',msg   : 'Нет подключенных номеров'})
 				}
 
-				return callback({status: 'ok', parsingId: parsing._id.toString()})
+				TgParsings.create({}, result=>{
+					const parsing = result.data;
+
+					for(const ip of ips){
+						request({
+							url: 'http://'+ip+':8080/parse_contacts',
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json'
+							},
+							body: JSON.stringify({...req.body, parsingId:parsing._id.toString()})
+						}, (error,  httpResponse, body)=> {
+							console.log(error)
+							console.log(body)
+						})
+					}
+
+					return callback({status: 'ok', parsingId: parsing._id.toString()})
+				})
 			})
 		})
 
@@ -349,7 +357,11 @@ class Spammer{
 
 	async createMailing(req, callback){
 
+		return this.checkActivation(result=>{
 
+			if(result.status!=='ok'){
+				return callback({status:'error',msg   : 'Не активировано'})
+			}
 			return TgMailings.create(req.body, result=>{
 
 
@@ -363,6 +375,7 @@ class Spammer{
 				})
 
 			})
+		})
 
 	}
 
@@ -427,174 +440,215 @@ class Spammer{
 
 		console.log('tasksExecutor')
 
-		const limit = 40
+		return this.checkActivation(result=> {
 
-		TgTasks.getAllByCondition({status:null, answer:answer}, result=>{
-			if(result.status!=='ok'){
-				return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
+			if (result.status !== 'ok') {
+				// return callback({
+				// 	status: 'error',
+				// 	msg   : 'Не активировано'
+				// })
+
+				return setTimeout(() => {
+					this.tasksExecutor(answer)
+				}, 10000)
 			}
 
-			if(result.data.length===0){
-				return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
-			}
+			const limit = 40
 
-			const task = result.data[0]
+			TgTasks.getAllByCondition({
+				status: null,
+				answer: answer
+			}, result => {
+				if (result.status !== 'ok') {
+					return setTimeout(() => {
+						this.tasksExecutor(answer)
+					}, 10000)
+				}
 
-			if(task.answer){
-				return TgAccounts.getAllByCondition({phone: task.data.tg_account}, async result=>{
-					const tgAccount = result.data[0]
+				if (result.data.length === 0) {
+					return setTimeout(() => {
+						this.tasksExecutor(answer)
+					}, 10000)
+				}
+
+				const task = result.data[0]
+
+				if (task.answer) {
+					return TgAccounts.getAllByCondition({phone: task.data.tg_account}, async result => {
+						const tgAccount = result.data[0]
+
+						const body = {
+							data        : {
+								phone    : tgAccount.phone,
+								message  : task.data.text,
+								user     : task.data.user,
+								mailingId: task.data.mailingId,
+								answer   : task.answer
+							},
+							execute_time: moment().format('YYYY-MM-DD HH:mm:ss')
+
+						}
+
+						console.log({
+							url    : 'http://' + tgAccount.ip + '/create_send_task',
+							method : 'POST',
+							headers: {
+								'Content-Type': 'application/json'
+							},
+							body   : JSON.stringify(body)
+						})
+
+						return request({
+							url    : 'http://' + tgAccount.ip + ':8080/create_send_task',
+							method : 'POST',
+							headers: {
+								'Content-Type': 'application/json'
+							},
+							body   : JSON.stringify(body)
+						}, (error, httpResponse, body) => {
+							console.log(error)
+							console.log(body)
+
+							try {
+								const response = JSON.parse(body);
+
+
+								TgTasks.update({_id: task._id}, {status: response.status}, result => {
+									console.log(result)
+								})
+
+								return setTimeout(() => {
+									this.tasksExecutor(answer)
+								}, 10000)
+
+							} catch (e) {
+								console.error(e)
+								return setTimeout(() => {
+									this.tasksExecutor(answer)
+								}, 10000)
+							}
+						})
+					})
+				}
+
+				return TgAccounts.getAllByCondition({status: 'active'}, async result => {
+					if (result.status !== 'ok') {
+						return setTimeout(() => {
+							this.tasksExecutor(answer)
+						}, 10000)
+					}
+
+					if (result.data.length === 0) {
+						return setTimeout(() => {
+							this.tasksExecutor(answer)
+						}, 10000)
+					}
+
+					const accounts = result.data;
+
+					const tg_accounts = accounts.map(el => el.phone);
+
+
+					let phonesData = await TgMessages.getDataByCondition({
+						tg_account: {$in: tg_accounts},
+						created_at: {$gte: new Date(moment().add(-24, 'hours').format('YYYY-MM-DD HH:mm:ss'))}
+					})
+
+
+					console.log(phonesData)
+
+					if (phonesData.error) {
+						console.error(phonesData)
+						return setTimeout(() => {
+							this.tasksExecutor(answer)
+						}, 10000)
+					}
+
+					let tgAccount = false
+
+					if (phonesData.length < tg_accounts.length) {
+
+						for (const phone of tg_accounts) {
+							if (!phonesData.find(el => el._id === phone)) {
+								tgAccount = accounts.find(el => el.phone === phone)
+							}
+						}
+					}
+
+
+					if (phonesData.length === tg_accounts.length) {
+						if (phonesData[0].countMessages < limit) {
+							tgAccount = accounts.find(el => el.phone === phonesData[0]._id)
+						}
+					}
+
+					if (!tgAccount) {
+						return setTimeout(() => {
+							this.tasksExecutor(answer)
+						}, 10000)
+					}
 
 					const body = {
-						data: {
-							phone: tgAccount.phone,
-							message: task.data.text,
-							user: task.data.user,
+						data        : {
+							phone    : tgAccount.phone,
+							message  : task.data.text,
+							user     : task.data.user,
 							mailingId: task.data.mailingId,
-							answer: task.answer
+							answer   : task.answer
 						},
 						execute_time: moment().format('YYYY-MM-DD HH:mm:ss')
 
 					}
 
 					console.log({
-						url: 'http://'+tgAccount.ip+'/create_send_task',
-						method: 'POST',
+						url    : 'http://' + tgAccount.ip + '/create_send_task',
+						method : 'POST',
 						headers: {
 							'Content-Type': 'application/json'
 						},
-						body: JSON.stringify(body)
+						body   : JSON.stringify(body)
 					})
 
 					return request({
-						url: 'http://'+tgAccount.ip+':8080/create_send_task',
-						method: 'POST',
+						url    : 'http://' + tgAccount.ip + ':8080/create_send_task',
+						method : 'POST',
 						headers: {
 							'Content-Type': 'application/json'
 						},
-						body: JSON.stringify(body)
-					}, (error,  httpResponse, body)=>{
+						body   : JSON.stringify(body)
+					}, (error, httpResponse, body) => {
 						console.log(error)
 						console.log(body)
 
-						try{
+						try {
 							const response = JSON.parse(body);
 
 
-							TgTasks.update({_id:task._id}, {status:response.status}, result=>{
+							TgTasks.update({_id: task._id}, {status: response.status}, result => {
 								console.log(result)
 							})
 
-							return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
+							TgMessages.create({
+								tg_account: tgAccount.phone,
+								contact   : task.data.user
+							}, result => {
+								console.log(result)
+							})
 
-						}
-						catch (e){
+							return setTimeout(() => {
+								this.tasksExecutor(answer)
+							}, 10000)
+
+						} catch (e) {
 							console.error(e)
-							return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
+							return setTimeout(() => {
+								this.tasksExecutor(answer)
+							}, 10000)
 						}
 					})
 				})
-			}
 
-			return TgAccounts.getAllByCondition({status:'active'}, async result=>{
-				if(result.status!=='ok'){
-					return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
-				}
-
-				if(result.data.length===0){
-					return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
-				}
-
-				const accounts = result.data;
-
-				const tg_accounts = accounts.map(el=>el.phone);
-
-
-				let phonesData = await TgMessages.getDataByCondition({tg_account:{$in:tg_accounts},created_at: {$gte:new Date(moment().add(-24,'hours').format('YYYY-MM-DD HH:mm:ss'))}})
-
-
-				console.log(phonesData)
-
-				if(phonesData.error){
-					console.error(phonesData)
-					return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
-				}
-
-				let tgAccount = false
-
-				if(phonesData.length<tg_accounts.length){
-
-					for(const phone of tg_accounts){
-						if(!phonesData.find(el=>el._id===phone)){
-							tgAccount = accounts.find(el=>el.phone===phone)
-						}
-					}
-				}
-
-
-				if(phonesData.length===tg_accounts.length) {
-					if (phonesData[0].countMessages < limit) {
-						tgAccount = accounts.find(el => el.phone === phonesData[0]._id)
-					}
-				}
-
-				if(!tgAccount){
-					return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
-				}
-
-				const body = {
-					data: {
-						phone: tgAccount.phone,
-						message: task.data.text,
-						user: task.data.user,
-						mailingId: task.data.mailingId,
-						answer: task.answer
-					},
-					execute_time: moment().format('YYYY-MM-DD HH:mm:ss')
-
-				}
-
-				console.log({
-					url: 'http://'+tgAccount.ip+'/create_send_task',
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify(body)
-				})
-
-				return request({
-					url: 'http://'+tgAccount.ip+':8080/create_send_task',
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify(body)
-				}, (error,  httpResponse, body)=>{
-					console.log(error)
-					console.log(body)
-
-					try{
-						const response = JSON.parse(body);
-
-
-						TgTasks.update({_id:task._id}, {status:response.status}, result=>{
-							console.log(result)
-						})
-
-						TgMessages.create({tg_account: tgAccount.phone, contact: task.data.user}, result=>{
-							console.log(result)
-						})
-
-						return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
-
-					}
-					catch (e){
-						console.error(e)
-						return setTimeout(()=>{this.tasksExecutor(answer)}, 10000)
-					}
-				})
 			})
-
 		})
 	}
 

@@ -30,7 +30,7 @@
                             </select>
                         </p>
                         <p class="tarif_date" id="errorAcc" style="font-size: 12px; margin:5px; display: none"></p>
-                        <a href="javascript:;" onclick="createMailing()">Создать</a>
+                        <a href="javascript:;" id="createMailing" onclick="createMailing()">Создать</a>
 
                     </div>
 
@@ -54,7 +54,7 @@
 	function createMailing(){
 		$('#errorAcc').text('').css('display','none')
 
-
+        $('#createMailing').attr('disabled', 'disabled')
 
 		var data = {
 			first_message: $('#first_message').val().trim(),
@@ -78,6 +78,7 @@
 				console.log(result)
 				if (result.status != 'ok') {
 					$('#errorAcc').text(result.msg).css({'display':'block','color':'red'})
+					$('#createMailing').removeAttribute('disabled')
 					return false
 				}
 

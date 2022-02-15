@@ -108,19 +108,30 @@ router.get('/tg_spammer_connect', function(req,res, next){
 })
 router.get('/tg_spammer_parser', function(req,res, next){
 
+	return Spammer.checkActivation(result=>{
 
+		if(result.status!=='ok'){
+			return res.redirect('/tg_spammer_activation')
+		}
 		const objectData ={}
 
 		return res.render('tg_spamer_parser', objectData);
+
+	})
 
 })
 
 router.get('/tg_spammer_mailing', function(req,res, next){
 
+	return Spammer.checkActivation(result=> {
 
-		const objectData ={}
+		if (result.status !== 'ok') {
+			return res.redirect('/tg_spammer_activation')
+		}
+		const objectData = {}
 
 		return res.render('tg_spamer_mailing', objectData);
+	})
 
 })
 router.get('/tg_spammer_activation', function(req,res, next){
