@@ -289,6 +289,11 @@ class Spammer{
 
 	clearBase(req, callback){
 		return TgContacts.updateMany({}, {clear:true}, result=>{
+
+			if(result.status!=='ok'){
+				return callback({status:'error',msg   : 'Ошибка при очисте базы'})
+			}
+
 			return callback(result)
 		})
 	}
