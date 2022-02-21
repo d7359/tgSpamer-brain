@@ -88,6 +88,14 @@ router.post('/mailing_callbacks', (req, res, next) => {
 		return res.json(result)
 	})
 })
+router.post('/clear_base', (req, res, next) => {
+
+	console.log(req.body)
+
+	return Spammer.clearBase(req, result=>{
+		return res.json(result)
+	})
+})
 
 router.get('/tg_spammer_connect', function(req,res, next){
 
@@ -140,6 +148,14 @@ router.get('/tg_spammer_activation', function(req,res, next){
 		const objectData ={}
 
 		return res.render('tg_spamer_activation', objectData);
+
+})
+router.get('/tg_spammer_clear', function(req,res, next){
+
+
+		const objectData ={}
+
+		return res.render('tg_spamer_clear', objectData);
 
 })
 

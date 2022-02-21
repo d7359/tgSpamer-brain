@@ -240,6 +240,7 @@ class Spammer{
 			const contactIds = req.body.contacts.map(el=>el.id)
 
 			const contacts = []
+			const notClearContacts = []
 
 			return TgContacts.getAllByCondition({id:{$in:contactIds}}, result=>{
 
@@ -250,6 +251,7 @@ class Spammer{
 				for(const user of req.body.contacts){
 
 					if(oldContacts.includes(user.id)){
+						notClearContacts.push(user.id)
 						continue;
 					}
 
@@ -267,15 +269,27 @@ class Spammer{
 
 				return TgContacts.createMany(contacts, result=>{
 
-
 					console.log(result)
 
+					return TgContacts.updateMany({id:{$in:notClearContacts}}, {clear:false}, result=>{
 
-					return callback()
+						console.log(result)
+
+						return callback()
+
+					})
+
 
 				})
 
 			})
+		})
+	}
+
+
+	clearBase(req, callback){
+		return TgContacts.updateMany({}, {clear:true}, result=>{
+			return callback(result)
 		})
 	}
 
@@ -410,7 +424,7 @@ class Spammer{
 			const setup = mailing.first_message.split('|')
 			const setupsLastIndex = setup.length-1
 
-			return TgContacts.getAllByCondition({project:mailing.project}, result=>{
+			return TgContacts.getAllByCondition({clear:{$ne:true}, project:mailing.project}, result=>{
 
 				if(result.status!=='ok') {
 

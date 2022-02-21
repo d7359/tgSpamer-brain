@@ -47,6 +47,9 @@ const schemaEvents = new Schema({
 	},
 	mailings:{
 		type:{}
+	},
+	clear:{
+		type:Boolean
 	}
 
 }, {timestamps: {createdAt: 'created_at', updatedAt: 'updated_at'}});
