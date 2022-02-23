@@ -463,6 +463,8 @@ class Spammer{
 
 				TgTasks.createMany(tasks, result=>{
 					console.log(result)
+
+					return callback({status:'ok'})
 				})
 
 			})
