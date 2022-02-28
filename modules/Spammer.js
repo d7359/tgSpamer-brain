@@ -172,6 +172,12 @@ class Spammer{
 		})
 	}
 
+	sleep(ms) {
+		return new Promise((resolve) => {
+			setTimeout(resolve, ms);
+		});
+	}
+
 	async importContacts(path, project, callback){
 
 		try {
