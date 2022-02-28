@@ -233,6 +233,8 @@ class Spammer{
 
 		}
 		catch (e){
+			console.error(e)
+
 			return callback({status:'error', msg: 'Ошибка при импорте контакта'})
 		}
 
