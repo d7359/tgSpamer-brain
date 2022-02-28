@@ -185,5 +185,14 @@ router.get('/tg_spammer_clear', function(req,res, next){
 		return res.render('tg_spamer_clear', objectData);
 
 })
+router.get('/tg_spammer_upload_base', function(req,res, next){
+
+		const objectData ={
+
+		}
+
+		return res.render('tg_spamer_upload_base', objectData);
+})
+
 
 module.exports = router;
