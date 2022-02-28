@@ -27,7 +27,7 @@ const schemaEvents = new Schema({
 	},
 	access_hash:{
 		type:String,
-		required: true,
+		// required: true,
 	},
 	first_name: {
 		type: String,
