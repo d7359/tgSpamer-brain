@@ -1,5 +1,6 @@
 const moment = require('moment')
 const request = require('request')
+const XLSX = require('xlsx')
 const TgAccounts = require('../controllers/tgAccountsController')
 const TgContacts = require('../controllers/tgContactsController')
 const TgMailings = require('../controllers/tgMailingsController')
@@ -169,6 +170,72 @@ class Spammer{
 				callback({status:'error', msg: 'Ошибка при активации'})
 			})
 		})
+	}
+
+	async importContacts(path, project, callback){
+
+		try {
+			var workbook        = XLSX.readFile(path, {cellDates: true});
+			var sheet_name_list = workbook.SheetNames;
+			var xlData          = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]], {header: 'A'});
+
+			// return console.log(xlData)
+
+			let counter = 0
+			const contacts = []
+			for (const row of xlData){
+				if(counter%1000===0){
+					await this.sleep(100)
+				}
+
+				if(!row.C && !row.D){
+					counter++
+					continue;
+				}
+
+				const contact = {
+					id: row.A,
+					first_name: row.B || '',
+					project:project,
+					mailings:{},
+					imported:true
+				}
+
+				if(row.C){
+					contact.username = row.C.replace('@','')
+				}
+				if(row.D){
+					contact.phone = row.D
+				}
+
+				contacts.push(contact)
+			}
+
+			const contactIds = contacts.map(el=>el.id)
+
+			console.log(project)
+
+			return TgContacts.getAllByCondition({id:{$in:contactIds}, project}, result=>{
+
+				console.log(result)
+
+				const oldContacts = result.data.map(el=>el.id)
+
+				const filteredContacts = contacts.filter(el=>!oldContacts.includes(el.id))
+
+				return TgContacts.createMany(filteredContacts, result=>{
+					console.log(result);
+
+					callback({status:'ok'})
+				})
+			})
+
+
+		}
+		catch (e){
+			return callback({status:'error', msg: 'Ошибка при импорте контакта'})
+		}
+
 	}
 
 	async parseContacts(req, callback){

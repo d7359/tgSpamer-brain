@@ -1,7 +1,10 @@
 const express = require('express');
 // const auth  = require('basic-auth');
+const multer = require('multer');
 const router  = express.Router();
 const Spammer = require('../modules/Spammer');
+
+const upload = multer({dest: '/var/www/node/tgSpamer-brain/public/uploads/'});
 
 router.options("/*", function(req, res, next){
 	console.log(req.headers);
@@ -11,6 +14,21 @@ router.options("/*", function(req, res, next){
 	res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
 	// res.send(200);
 	res.sendStatus(200);
+});
+
+router.post('/file_base', upload.single('files'), (req, res) =>  {
+
+	// console.log(req);
+	console.log(req.file);
+	console.log(req.body);
+	console.log(req.body.project);
+
+	if(!req.file){
+		return res.json({status:'error',message:'Недопустимое раcширение файла'});
+	}
+
+
+	return res.json({status:'ok', filename: req.file.filename})
 });
 
 
@@ -23,6 +41,15 @@ router.post('/create_account', (req, res, next) => {
 	})
 
 })
+
+router.post('/upload_base', (req, res) =>  {
+
+	return Spammer.importContacts('/var/www/node/tgSpamer-brain/public/uploads/'+req.body.filename, req.body.project, result=>{
+		res.json(result)
+	})
+
+
+});
 
 router.post('/activation', (req, res, next) => {
 
