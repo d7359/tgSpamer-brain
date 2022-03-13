@@ -312,6 +312,10 @@ class Spammer{
 				console.log(result)
 			})
 
+			if(!req.body.contacts || req.body.contacts.length===0){
+				return callback();
+			}
+
 			const contactIds = req.body.contacts.map(el=>el.id)
 
 			const contacts = []
