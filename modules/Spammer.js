@@ -75,7 +75,7 @@ class Spammer{
 			}
 
 			request({
-				url: 'https://pay.telegramer.bot/check_spamer_activation',
+				url: 'https://discord.geeko.tech/check_spamer_activation',
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
